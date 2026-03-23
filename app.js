@@ -1,42 +1,29 @@
-const express = require('express')
-const app = express()
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const { todoRouter } = require('./routes/todo.js');
 
-// ✅ CORS исправлен правильно
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*')
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-  res.header('Access-Control-Allow-Headers', 'Content-Type')
-  
-  // Обработка preflight-запроса
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200)
-    return
-  }
-  
-  next()
-})
+const app = express();
 
-app.use(express.json())
+// ==================== CORS + EXPLICIT PREFLIGHT ====================
+const corsOptions = {
+    origin: 'https://todo-client-1jmp.onrender.com',
+    methods: ['GET', 'POST', 'DELETE', 'PUT', 'OPTIONS'],
+    allowedHeaders: ['Content-Type'],
+};
 
-let tasks = [
-  { id: 1, description: "My test task" },
-  { id: 2, description: "My another test task" },
-  { id: 3, description: "Test from REST Client" }
-]
+app.use(cors(corsOptions));
 
-app.get('/', (req, res) => {
-  res.json(tasks)
-})
+// 👇 ВАЖНО: явно разрешаем preflight для ВСЕХ маршрутов
+app.options('*', cors(corsOptions));
 
-app.post('/new', (req, res) => {
-  const newTask = {
-    id: tasks.length + 1,
-    description: req.body.description
-  }
-  tasks.push(newTask)
-  res.json(newTask)
-})
+// Явный обработчик preflight (это решает проблему)
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-app.listen(3001, () => {
-  console.log('✅ Server is running on http://localhost:3001 — CORS исправлен!')
-})
+app.use('/', todoRouter);
+
+const port = process.env.PORT || 3001;
+app.listen(port, () => {
+    console.log(`✅ Server running on port ${port}`);
+});
