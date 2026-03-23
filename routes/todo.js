@@ -5,12 +5,12 @@ let tasks = [
   { id: 1, description: "Test task" }
 ];
 
-// получить все задачи
+// get all tasks
 router.get('/', (req, res) => {
   res.json(tasks);
 });
 
-// добавить задачу
+// add task
 router.post('/new', (req, res) => {
   const { description } = req.body;
   const newTask = {
@@ -21,7 +21,7 @@ router.post('/new', (req, res) => {
   res.json(newTask);
 });
 
-// удалить задачу
+// delete task
 router.delete('/delete/:id', (req, res) => {
   const { id } = req.params;
   tasks = tasks.filter(t => t.id != id);
